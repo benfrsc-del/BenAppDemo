@@ -8,9 +8,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'planning-blue': '#1e40af',
-        'planning-green': '#059669',
-        'council-orange': '#ea580c',
+        'mecone-greenfield': '#254F38',
+        'mecone-urbanzest': '#CAFF01',
+        'mecone-forest': '#37C79B',
+        'mecone-lawn': '#00D37F',
+        'mecone-iris': '#BDB0CF',
+        'mecone-purple': '#6481DE',
       },
     },
   },
