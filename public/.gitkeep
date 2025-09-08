@@ -1,0 +1,5 @@
+# Public Assets Directory
+
+This directory is for static assets like images, icons, and other files that will be served directly by Next.js.
+
+Currently empty but required by Vercel for deployment.
