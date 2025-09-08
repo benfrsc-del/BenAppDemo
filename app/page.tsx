@@ -14,7 +14,11 @@ import {
   Edit,
   Trash2,
   X,
-  Save
+  Save,
+  Sync,
+  Cloud,
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react'
 
 interface Project {
@@ -33,6 +37,8 @@ interface Project {
   contactPerson?: string
   contactEmail?: string
   contactPhone?: string
+  workflowMaxJobId?: string
+  lastSyncDate?: string
 }
 
 const NSW_COUNCILS = [
@@ -74,9 +80,15 @@ export default function Dashboard() {
   const [isAddingProject, setIsAddingProject] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [viewingProject, setViewingProject] = useState<Project | null>(null)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null)
+  const [syncStatus, setSyncStatus] = useState<'success' | 'error' | null>(null)
+  const [isWorkflowMaxConnected, setIsWorkflowMaxConnected] = useState(false)
 
   useEffect(() => {
     const savedProjects = localStorage.getItem('nswPlanningProjects')
+    const savedSyncTime = localStorage.getItem('lastWorkflowMaxSync')
+    
     if (savedProjects) {
       const parsed = JSON.parse(savedProjects)
       const updatedProjects = parsed.map((project: Project) => ({
@@ -84,29 +96,13 @@ export default function Dashboard() {
         daysRemaining: calculateDaysRemaining(project.expectedDecision)
       }))
       setProjects(updatedProjects)
-    } else {
-      const sampleProjects: Project[] = [
-        {
-          id: '1',
-          name: 'Residential Development - 15 Units',
-          client: 'Sunset Developments',
-          address: '123 Main Street, Parramatta',
-          council: 'Parramatta City Council',
-          status: 'review',
-          submissionDate: '2024-08-15',
-          expectedDecision: '2024-10-15',
-          daysRemaining: calculateDaysRemaining('2024-10-15'),
-          value: 450000,
-          description: 'Multi-story residential development with basement parking',
-          daNumber: 'DA/2024/0123',
-          contactPerson: 'John Smith',
-          contactEmail: 'john@sunsetdev.com',
-          contactPhone: '0412 345 678'
-        }
-      ]
-      setProjects(sampleProjects)
-      localStorage.setItem('nswPlanningProjects', JSON.stringify(sampleProjects))
     }
+    
+    if (savedSyncTime) {
+      setLastSyncTime(savedSyncTime)
+    }
+
+    checkWorkflowMaxConnection()
   }, [])
 
   useEffect(() => {
@@ -114,6 +110,98 @@ export default function Dashboard() {
       localStorage.setItem('nswPlanningProjects', JSON.stringify(projects))
     }
   }, [projects])
+
+  const checkWorkflowMaxConnection = async () => {
+    try {
+      const response = await fetch('/api/workflowmax?action=clients')
+      setIsWorkflowMaxConnected(response.ok)
+    } catch (error) {
+      setIsWorkflowMaxConnected(false)
+    }
+  }
+
+  const syncWithWorkflowMax = async () => {
+    setIsSyncing(true)
+    setSyncStatus(null)
+    
+    try {
+      const response = await fetch('/api/workflowmax?action=sync')
+      const data = await response.json()
+      
+      if (data.success) {
+        const workflowMaxProjects = data.projects || []
+        const existingProjects = projects.filter(p => !p.workflowMaxJobId)
+        
+        const mergedProjects = [...existingProjects]
+        
+        workflowMaxProjects.forEach((wfmProject: Project) => {
+          const existingIndex = mergedProjects.findIndex(p => p.workflowMaxJobId === wfmProject.workflowMaxJobId)
+          if (existingIndex >= 0) {
+            mergedProjects[existingIndex] = wfmProject
+          } else {
+            mergedProjects.push(wfmProject)
+          }
+        })
+        
+        setProjects(mergedProjects)
+        const syncTime = new Date().toISOString()
+        setLastSyncTime(syncTime)
+        localStorage.setItem('lastWorkflowMaxSync', syncTime)
+        setSyncStatus('success')
+      } else {
+        throw new Error(data.error || 'Sync failed')
+      }
+    } catch (error) {
+      console.error('Sync error:', error)
+      setSyncStatus('error')
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
+  const createProjectInWorkflowMax = async (projectData: Omit<Project, 'id' | 'daysRemaining'>) => {
+    try {
+      const response = await fetch('/api/workflowmax', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', project: projectData })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        return data.project
+      } else {
+        throw new Error(data.error || 'Failed to create project in WorkflowMax')
+      }
+    } catch (error) {
+      console.error('Error creating project in WorkflowMax:', error)
+      return null
+    }
+  }
+
+  const updateProjectInWorkflowMax = async (project: Project) => {
+    if (!project.workflowMaxJobId) return project
+    
+    try {
+      const response = await fetch('/api/workflowmax', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', project })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        return data.project
+      } else {
+        throw new Error(data.error || 'Failed to update project in WorkflowMax')
+      }
+    } catch (error) {
+      console.error('Error updating project in WorkflowMax:', error)
+      return project
+    }
+  }
 
   const filteredProjects = projects.filter(project => {
     const matchesStatus = filterStatus === 'all' || project.status === filterStatus
@@ -124,22 +212,35 @@ export default function Dashboard() {
     return matchesStatus && matchesSearch
   })
 
-  const addProject = (projectData: Omit<Project, 'id' | 'daysRemaining'>) => {
-    const newProject: Project = {
+  const addProject = async (projectData: Omit<Project, 'id' | 'daysRemaining'>) => {
+    let newProject: Project = {
       ...projectData,
       id: Date.now().toString(),
       daysRemaining: calculateDaysRemaining(projectData.expectedDecision)
     }
+
+    if (isWorkflowMaxConnected) {
+      const workflowMaxProject = await createProjectInWorkflowMax(projectData)
+      if (workflowMaxProject) {
+        newProject = workflowMaxProject
+      }
+    }
+
     setProjects([...projects, newProject])
     setIsAddingProject(false)
   }
 
-  const updateProject = (updatedProject: Project) => {
-    const updated = {
+  const updateProject = async (updatedProject: Project) => {
+    let finalProject = {
       ...updatedProject,
       daysRemaining: calculateDaysRemaining(updatedProject.expectedDecision)
     }
-    setProjects(projects.map(p => p.id === updated.id ? updated : p))
+
+    if (isWorkflowMaxConnected && updatedProject.workflowMaxJobId) {
+      finalProject = await updateProjectInWorkflowMax(finalProject)
+    }
+
+    setProjects(projects.map(p => p.id === finalProject.id ? finalProject : p))
     setEditingProject(null)
   }
 
@@ -185,6 +286,7 @@ export default function Dashboard() {
   const approvedProjects = projects.filter(p => p.status === 'approved').length
   const pendingProjects = projects.filter(p => p.status === 'review' || p.status === 'submitted').length
   const totalValue = projects.reduce((sum, p) => sum + p.value, 0)
+  const workflowMaxProjects = projects.filter(p => p.workflowMaxJobId).length
 
   const ProjectForm = ({ 
     project, 
@@ -225,9 +327,17 @@ export default function Dashboard() {
         <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {project ? 'Edit Project' : 'Add New Project'}
-              </h2>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {project ? 'Edit Project' : 'Add New Project'}
+                </h2>
+                {isWorkflowMaxConnected && (
+                  <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
+                    <Cloud className="w-4 h-4" />
+                    Will sync with WorkflowMax
+                  </p>
+                )}
+              </div>
               <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
                 <X className="w-6 h-6" />
               </button>
@@ -430,7 +540,15 @@ export default function Dashboard() {
         <div className="p-6">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{project.name}</h2>
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-2xl font-bold text-gray-900">{project.name}</h2>
+                {project.workflowMaxJobId && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center gap-1">
+                    <Cloud className="w-3 h-3" />
+                    WorkflowMax
+                  </span>
+                )}
+              </div>
               <span className={getStatusBadge(project.status)}>
                 <span className="flex items-center gap-1">
                   {getStatusIcon(project.status)}
@@ -496,6 +614,18 @@ export default function Dashboard() {
             </div>
           )}
 
+          {project.workflowMaxJobId && project.lastSyncDate && (
+            <div className="mb-6 p-3 bg-blue-50 rounded-lg">
+              <h3 className="font-semibold text-blue-800 mb-1">WorkflowMax Integration</h3>
+              <p className="text-sm text-blue-600">
+                Job ID: {project.workflowMaxJobId}
+              </p>
+              <p className="text-sm text-blue-600">
+                Last synced: {new Date(project.lastSyncDate).toLocaleString()}
+              </p>
+            </div>
+          )}
+
           <div className="flex justify-end gap-3">
             <button
               onClick={() => onDelete()}
@@ -533,22 +663,81 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+            <div className="flex items-center gap-6">
               <h1 className="text-2xl font-bold text-gray-900">NSW Planning PM</h1>
+              
+              <div className="flex items-center gap-2">
+                {isWorkflowMaxConnected ? (
+                  <span className="flex items-center gap-1 text-sm text-green-600">
+                    <Cloud className="w-4 h-4" />
+                    WorkflowMax Connected
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-sm text-gray-500">
+                    <AlertTriangle className="w-4 h-4" />
+                    WorkflowMax Not Configured
+                  </span>
+                )}
+              </div>
             </div>
-            <button 
-              onClick={() => setIsAddingProject(true)}
-              className="btn-primary flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              New Project
-            </button>
+
+            <div className="flex items-center gap-3">
+              {isWorkflowMaxConnected && (
+                <button
+                  onClick={syncWithWorkflowMax}
+                  disabled={isSyncing}
+                  className={`btn-secondary flex items-center gap-2 ${
+                    isSyncing ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {isSyncing ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sync className="w-4 h-4" />
+                  )}
+                  {isSyncing ? 'Syncing...' : 'Sync WorkflowMax'}
+                </button>
+              )}
+
+              <button 
+                onClick={() => setIsAddingProject(true)}
+                className="btn-primary flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                New Project
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {syncStatus && (
+          <div className={`mb-4 p-3 rounded-lg ${
+            syncStatus === 'success' 
+              ? 'bg-green-100 text-green-800 border border-green-200' 
+              : 'bg-red-100 text-red-800 border border-red-200'
+          }`}>
+            {syncStatus === 'success' ? (
+              <p className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Successfully synced with WorkflowMax
+                {lastSyncTime && (
+                  <span className="text-sm">
+                    at {new Date(lastSyncTime).toLocaleString()}
+                  </span>
+                )}
+              </p>
+            ) : (
+              <p className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                Failed to sync with WorkflowMax. Please check your connection.
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="card">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -596,6 +785,18 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          <div className="card">
+            <div className="flex items-center">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <Cloud className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-sm font-medium text-gray-500">WorkflowMax</h3>
+                <p className="text-2xl font-bold text-gray-900">{workflowMaxProjects}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="card mb-6">
@@ -624,6 +825,12 @@ export default function Dashboard() {
                 <option value="conditional">Conditional</option>
               </select>
             </div>
+
+            {lastSyncTime && (
+              <p className="text-sm text-gray-500">
+                Last sync: {new Date(lastSyncTime).toLocaleString()}
+              </p>
+            )}
           </div>
         </div>
 
@@ -644,6 +851,12 @@ export default function Dashboard() {
                         {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
                       </span>
                     </span>
+                    {project.workflowMaxJobId && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center gap-1">
+                        <Cloud className="w-3 h-3" />
+                        WFM
+                      </span>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
@@ -688,13 +901,24 @@ export default function Dashboard() {
               <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-medium mb-2">No projects found</h3>
               <p>Try adjusting your search or filter criteria, or add your first project.</p>
-              <button 
-                onClick={() => setIsAddingProject(true)}
-                className="btn-primary mt-4 flex items-center gap-2 mx-auto"
-              >
-                <Plus className="w-4 h-4" />
-                Add Your First Project
-              </button>
+              <div className="flex justify-center gap-3 mt-4">
+                <button 
+                  onClick={() => setIsAddingProject(true)}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Your First Project
+                </button>
+                {isWorkflowMaxConnected && (
+                  <button 
+                    onClick={syncWithWorkflowMax}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <Sync className="w-4 h-4" />
+                    Sync from WorkflowMax
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
