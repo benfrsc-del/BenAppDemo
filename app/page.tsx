@@ -59,7 +59,6 @@ const NSW_COUNCILS = [
   'Wollongong City Council'
 ]
 
-// Calculate days remaining from expected decision date
 const calculateDaysRemaining = (expectedDecision: string): number => {
   const today = new Date()
   const decisionDate = new Date(expectedDecision)
@@ -76,19 +75,16 @@ export default function Dashboard() {
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [viewingProject, setViewingProject] = useState<Project | null>(null)
 
-  // Load projects from localStorage on component mount
   useEffect(() => {
     const savedProjects = localStorage.getItem('nswPlanningProjects')
     if (savedProjects) {
       const parsed = JSON.parse(savedProjects)
-      // Update days remaining for all projects
       const updatedProjects = parsed.map((project: Project) => ({
         ...project,
         daysRemaining: calculateDaysRemaining(project.expectedDecision)
       }))
       setProjects(updatedProjects)
     } else {
-      // Initialize with one sample project if no saved projects
       const sampleProjects: Project[] = [
         {
           id: '1',
@@ -113,7 +109,6 @@ export default function Dashboard() {
     }
   }, [])
 
-  // Save projects to localStorage whenever projects change
   useEffect(() => {
     if (projects.length > 0) {
       localStorage.setItem('nswPlanningProjects', JSON.stringify(projects))
@@ -191,7 +186,6 @@ export default function Dashboard() {
   const pendingProjects = projects.filter(p => p.status === 'review' || p.status === 'submitted').length
   const totalValue = projects.reduce((sum, p) => sum + p.value, 0)
 
-  // Project form component
   const ProjectForm = ({ 
     project, 
     onSubmit, 
@@ -234,10 +228,7 @@ export default function Dashboard() {
               <h2 className="text-2xl font-bold text-gray-900">
                 {project ? 'Edit Project' : 'Add New Project'}
               </h2>
-              <button
-                onClick={onCancel}
-                className="text-gray-400 hover:text-gray-600"
-              >
+              <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -413,17 +404,10 @@ export default function Dashboard() {
               </div>
 
               <div className="flex justify-end gap-3 pt-6">
-                <button
-                  type="button"
-                  onClick={onCancel}
-                  className="btn-secondary"
-                >
+                <button type="button" onClick={onCancel} className="btn-secondary">
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="btn-primary flex items-center gap-2"
-                >
+                <button type="submit" className="btn-primary flex items-center gap-2">
                   <Save className="w-4 h-4" />
                   {project ? 'Update Project' : 'Add Project'}
                 </button>
@@ -435,7 +419,6 @@ export default function Dashboard() {
     )
   }
 
-  // Project details component
   const ProjectDetails = ({ project, onClose, onEdit, onDelete }: {
     project: Project
     onClose: () => void
@@ -521,10 +504,7 @@ export default function Dashboard() {
               <Trash2 className="w-4 h-4" />
               Delete
             </button>
-            <button
-              onClick={onEdit}
-              className="btn-primary flex items-center gap-2"
-            >
+            <button onClick={onEdit} className="btn-primary flex items-center gap-2">
               <Edit className="w-4 h-4" />
               Edit Project
             </button>
@@ -550,7 +530,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -569,7 +548,6 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card">
             <div className="flex items-center">
@@ -620,7 +598,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Filters and Search */}
         <div className="card mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -650,7 +627,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Projects List */}
         <div className="space-y-4">
           {filteredProjects.map((project) => (
             <div 
@@ -671,50 +647,7 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                    <div className="text-sm text-gray-500">${project.value.toLocaleString()}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredProjects.length === 0 && (
-          <div className="card text-center py-12">
-            <div className="text-gray-500">
-              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-medium mb-2">No projects found</h3>
-              <p>Try adjusting your search or filter criteria, or add your first project.</p>
-              <button 
-                onClick={() => setIsAddingProject(true)}
-                className="btn-primary mt-4 flex items-center gap-2 mx-auto"
-              >
-                <Plus className="w-4 h-4" />
-                Add Your First Project
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Modals */}
-      {isAddingProject && (
-        <ProjectForm
-          onSubmit={addProject}
-          onCancel={() => setIsAddingProject(false)}
-        />
-      )}
-
-      {editingProject && (
-        <ProjectForm
-          project={editingProject}
-          onSubmit={(data) => updateProject({ ...editingProject, ...data })}
-          onCancel={() => setEditingProject(null)}
-        />
-      )}
-    </div>
-  )
-}flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                       <Users className="w-4 h-4" />
                       <span>{project.client}</span>
                     </div>
@@ -741,4 +674,46 @@ export default function Dashboard() {
                     }`}>
                       {project.daysRemaining === 0 ? 'Decision due' : `${project.daysRemaining} days remaining`}
                     </div>
-                    <div className="
+                    <div className="text-sm text-gray-500">${project.value.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredProjects.length === 0 && (
+          <div className="card text-center py-12">
+            <div className="text-gray-500">
+              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg font-medium mb-2">No projects found</h3>
+              <p>Try adjusting your search or filter criteria, or add your first project.</p>
+              <button 
+                onClick={() => setIsAddingProject(true)}
+                className="btn-primary mt-4 flex items-center gap-2 mx-auto"
+              >
+                <Plus className="w-4 h-4" />
+                Add Your First Project
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {isAddingProject && (
+        <ProjectForm
+          onSubmit={addProject}
+          onCancel={() => setIsAddingProject(false)}
+        />
+      )}
+
+      {editingProject && (
+        <ProjectForm
+          project={editingProject}
+          onSubmit={(data) => updateProject({ ...editingProject, ...data })}
+          onCancel={() => setEditingProject(null)}
+        />
+      )}
+    </div>
+  )
+}
