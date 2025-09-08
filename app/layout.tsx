@@ -5,8 +5,8 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'NSW Planning Project Manager',
-  description: 'Project management tool for NSW planning consultants',
+  title: 'Mecone Planning Project Manager',
+  description: 'Project management tool for Mecone planning consultants',
 }
 
 export default function RootLayout({
