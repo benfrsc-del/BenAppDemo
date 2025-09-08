@@ -10,7 +10,7 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors;
+    @apply bg-mecone-lawn text-white px-4 py-2 rounded-lg hover:bg-mecone-forest transition-colors font-medium;
   }
   
   .btn-secondary {
@@ -23,21 +23,5 @@
   
   .status-badge {
     @apply px-3 py-1 rounded-full text-sm font-medium;
-  }
-  
-  .status-submitted {
-    @apply bg-yellow-100 text-yellow-800;
-  }
-  
-  .status-review {
-    @apply bg-blue-100 text-blue-800;
-  }
-  
-  .status-approved {
-    @apply bg-green-100 text-green-800;
-  }
-  
-  .status-conditional {
-    @apply bg-orange-100 text-orange-800;
   }
 }
