@@ -26,15 +26,6 @@ interface WorkflowMaxJob {
     ID: string
     n: string
   }
-  Tasks?: Array<{
-    ID: string
-    n: string
-    Description: string
-    EstimatedMinutes: number
-    ActualMinutes: number
-    Completed: boolean
-    DueDate?: string
-  }>
 }
 
 interface PlanningProject {
@@ -94,16 +85,6 @@ class WorkflowMaxAPI {
     }
   }
 
-  async getJob(jobId: string): Promise<WorkflowMaxJob | null> {
-    try {
-      const response = await this.makeRequest(`/v2/jobs/${jobId}`)
-      return response.job || null
-    } catch (error) {
-      console.error(`Error fetching WorkflowMax job ${jobId}:`, error)
-      return null
-    }
-  }
-
   async createJob(jobData: Partial<WorkflowMaxJob>): Promise<WorkflowMaxJob | null> {
     try {
       const response = await this.makeRequest('/v2/jobs', {
@@ -158,7 +139,7 @@ function transformWorkflowMaxJob(job: WorkflowMaxJob): PlanningProject {
     'Completed': 'approved'
   }
 
-  // Extract planning-specific info from description or custom fields
+  // Extract planning-specific info from description
   const getDANumber = (description: string): string => {
     const daMatch = description.match(/DA[\/\-]?\d{4}[\/\-]?\d+/i)
     return daMatch ? daMatch[0] : ''
@@ -253,7 +234,7 @@ export async function GET(request: NextRequest) {
         const jobs = await api.getJobs()
         const planningProjects = jobs
           .filter(job => 
-            // Filter for planning-related jobs (you can customize this)
+            // Filter for planning-related jobs
             job.Description.toLowerCase().includes('da') ||
             job.Description.toLowerCase().includes('development') ||
             job.Description.toLowerCase().includes('planning') ||
