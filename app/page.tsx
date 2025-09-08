@@ -67,6 +67,18 @@ const calculateDaysRemaining = (expectedDecision: string): number => {
   return Math.max(0, diffDays)
 }
 
+// Mecone Logo Component
+const MeconeLogo = () => (
+  <div className="flex items-center gap-2">
+    <div className="flex gap-1">
+      <div className="w-2 h-6 bg-mecone-lawn transform -skew-x-12"></div>
+      <div className="w-2 h-6 bg-mecone-lawn transform -skew-x-12 opacity-70"></div>
+      <div className="w-2 h-6 bg-mecone-lawn transform -skew-x-12 opacity-40"></div>
+    </div>
+    <span className="text-2xl font-semibold text-mecone-forest">Mecone</span>
+  </div>
+)
+
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [filterStatus, setFilterStatus] = useState<string>('all')
@@ -76,7 +88,7 @@ export default function Dashboard() {
   const [viewingProject, setViewingProject] = useState<Project | null>(null)
 
   useEffect(() => {
-    const savedProjects = localStorage.getItem('nswPlanningProjects')
+    const savedProjects = localStorage.getItem('meconePlanningProjects')
     if (savedProjects) {
       const parsed = JSON.parse(savedProjects)
       const updatedProjects = parsed.map((project: Project) => ({
@@ -105,13 +117,13 @@ export default function Dashboard() {
         }
       ]
       setProjects(sampleProjects)
-      localStorage.setItem('nswPlanningProjects', JSON.stringify(sampleProjects))
+      localStorage.setItem('meconePlanningProjects', JSON.stringify(sampleProjects))
     }
   }, [])
 
   useEffect(() => {
     if (projects.length > 0) {
-      localStorage.setItem('nswPlanningProjects', JSON.stringify(projects))
+      localStorage.setItem('meconePlanningProjects', JSON.stringify(projects))
     }
   }, [projects])
 
@@ -154,13 +166,13 @@ export default function Dashboard() {
     const baseClasses = 'status-badge'
     switch (status) {
       case 'submitted':
-        return `${baseClasses} status-submitted`
+        return `${baseClasses} bg-yellow-100 text-yellow-800`
       case 'review':
-        return `${baseClasses} status-review`
+        return `${baseClasses} bg-mecone-iris/20 text-mecone-purple`
       case 'approved':
-        return `${baseClasses} status-approved`
+        return `${baseClasses} bg-mecone-lawn/20 text-mecone-forest`
       case 'conditional':
-        return `${baseClasses} status-conditional`
+        return `${baseClasses} bg-orange-100 text-orange-800`
       default:
         return baseClasses
     }
@@ -225,7 +237,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-mecone-greenfield">
                 {project ? 'Edit Project' : 'Add New Project'}
               </h2>
               <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
@@ -244,7 +256,7 @@ export default function Dashboard() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -257,7 +269,7 @@ export default function Dashboard() {
                     required
                     value={formData.client}
                     onChange={(e) => setFormData({ ...formData, client: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -269,7 +281,7 @@ export default function Dashboard() {
                     type="text"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -280,7 +292,7 @@ export default function Dashboard() {
                   <select
                     value={formData.council}
                     onChange={(e) => setFormData({ ...formData, council: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   >
                     <option value="">Select Council</option>
                     {NSW_COUNCILS.map(council => (
@@ -296,7 +308,7 @@ export default function Dashboard() {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   >
                     <option value="submitted">Submitted</option>
                     <option value="review">Under Review</option>
@@ -313,7 +325,7 @@ export default function Dashboard() {
                     type="date"
                     value={formData.submissionDate}
                     onChange={(e) => setFormData({ ...formData, submissionDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -326,7 +338,7 @@ export default function Dashboard() {
                     required
                     value={formData.expectedDecision}
                     onChange={(e) => setFormData({ ...formData, expectedDecision: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -338,7 +350,7 @@ export default function Dashboard() {
                     type="number"
                     value={formData.value}
                     onChange={(e) => setFormData({ ...formData, value: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -350,7 +362,7 @@ export default function Dashboard() {
                     type="text"
                     value={formData.daNumber}
                     onChange={(e) => setFormData({ ...formData, daNumber: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -362,7 +374,7 @@ export default function Dashboard() {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -374,7 +386,7 @@ export default function Dashboard() {
                     type="text"
                     value={formData.contactPerson}
                     onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -386,7 +398,7 @@ export default function Dashboard() {
                     type="email"
                     value={formData.contactEmail}
                     onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
 
@@ -398,7 +410,7 @@ export default function Dashboard() {
                     type="tel"
                     value={formData.contactPhone}
                     onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mecone-lawn"
                   />
                 </div>
               </div>
@@ -430,7 +442,7 @@ export default function Dashboard() {
         <div className="p-6">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{project.name}</h2>
+              <h2 className="text-2xl font-bold text-mecone-greenfield mb-2">{project.name}</h2>
               <span className={getStatusBadge(project.status)}>
                 <span className="flex items-center gap-1">
                   {getStatusIcon(project.status)}
@@ -445,7 +457,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">Client Information</h3>
+              <h3 className="font-semibold text-mecone-forest mb-2">Client Information</h3>
               <p className="text-gray-600 mb-1">{project.client}</p>
               {project.contactPerson && (
                 <p className="text-sm text-gray-500">Contact: {project.contactPerson}</p>
@@ -459,7 +471,7 @@ export default function Dashboard() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">Project Details</h3>
+              <h3 className="font-semibold text-mecone-forest mb-2">Project Details</h3>
               <p className="text-gray-600 mb-1">{project.address}</p>
               <p className="text-sm text-gray-500">{project.council}</p>
               {project.daNumber && (
@@ -468,7 +480,7 @@ export default function Dashboard() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">Timeline</h3>
+              <h3 className="font-semibold text-mecone-forest mb-2">Timeline</h3>
               <p className="text-sm text-gray-500">
                 Submitted: {new Date(project.submissionDate).toLocaleDateString()}
               </p>
@@ -477,21 +489,21 @@ export default function Dashboard() {
               </p>
               <p className={`text-sm font-medium ${
                 project.daysRemaining <= 7 ? 'text-red-600' : 
-                project.daysRemaining <= 14 ? 'text-yellow-600' : 'text-green-600'
+                project.daysRemaining <= 14 ? 'text-yellow-600' : 'text-mecone-lawn'
               }`}>
                 {project.daysRemaining === 0 ? 'Decision due' : `${project.daysRemaining} days remaining`}
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">Value</h3>
-              <p className="text-2xl font-bold text-gray-900">${project.value.toLocaleString()}</p>
+              <h3 className="font-semibold text-mecone-forest mb-2">Value</h3>
+              <p className="text-2xl font-bold text-mecone-greenfield">${project.value.toLocaleString()}</p>
             </div>
           </div>
 
           {project.description && (
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-700 mb-2">Description</h3>
+              <h3 className="font-semibold text-mecone-forest mb-2">Description</h3>
               <p className="text-gray-600">{project.description}</p>
             </div>
           )}
@@ -516,15 +528,33 @@ export default function Dashboard() {
 
   if (viewingProject) {
     return (
-      <ProjectDetails
-        project={viewingProject}
-        onClose={() => setViewingProject(null)}
-        onEdit={() => {
-          setEditingProject(viewingProject)
-          setViewingProject(null)
-        }}
-        onDelete={() => deleteProject(viewingProject.id)}
-      />
+      <>
+        <div className="min-h-screen bg-gray-50">
+          <header className="bg-white shadow-sm border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <MeconeLogo />
+                <button 
+                  onClick={() => setIsAddingProject(true)}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Project
+                </button>
+              </div>
+            </div>
+          </header>
+        </div>
+        <ProjectDetails
+          project={viewingProject}
+          onClose={() => setViewingProject(null)}
+          onEdit={() => {
+            setEditingProject(viewingProject)
+            setViewingProject(null)
+          }}
+          onDelete={() => deleteProject(viewingProject.id)}
+        />
+      </>
     )
   }
 
@@ -533,9 +563,7 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">NSW Planning PM</h1>
-            </div>
+            <MeconeLogo />
             <button 
               onClick={() => setIsAddingProject(true)}
               className="btn-primary flex items-center gap-2"
@@ -551,24 +579,24 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card">
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="w-6 h-6 text-blue-600" />
+              <div className="p-2 bg-mecone-urbanzest/20 rounded-lg">
+                <FileText className="w-6 h-6 text-mecone-forest" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm font-medium text-gray-500">Total Projects</h3>
-                <p className="text-2xl font-bold text-gray-900">{totalProjects}</p>
+                <p className="text-2xl font-bold text-mecone-greenfield">{totalProjects}</p>
               </div>
             </div>
           </div>
 
           <div className="card">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-2 bg-mecone-lawn/20 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-mecone-lawn" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm font-medium text-gray-500">Approved</h3>
-                <p className="text-2xl font-bold text-gray-900">{approvedProjects}</p>
+                <p className="text-2xl font-bold text-mecone-greenfield">{approvedProjects}</p>
               </div>
             </div>
           </div>
@@ -580,19 +608,19 @@ export default function Dashboard() {
               </div>
               <div className="ml-4">
                 <h3 className="text-sm font-medium text-gray-500">Pending</h3>
-                <p className="text-2xl font-bold text-gray-900">{pendingProjects}</p>
+                <p className="text-2xl font-bold text-mecone-greenfield">{pendingProjects}</p>
               </div>
             </div>
           </div>
 
           <div className="card">
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="w-6 h-6 text-purple-600" />
+              <div className="p-2 bg-mecone-iris/20 rounded-lg">
+                <Users className="w-6 h-6 text-mecone-purple" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm font-medium text-gray-500">Total Value</h3>
-                <p className="text-2xl font-bold text-gray-900">${(totalValue / 1000).toFixed(0)}k</p>
+                <p className="text-2xl font-bold text-mecone-greenfield">${(totalValue / 1000).toFixed(0)}k</p>
               </div>
             </div>
           </div>
@@ -606,14 +634,14 @@ export default function Dashboard() {
                 <input
                   type="text"
                   placeholder="Search projects..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mecone-lawn focus:border-transparent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               
               <select
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mecone-lawn focus:border-transparent"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
               >
@@ -631,13 +659,13 @@ export default function Dashboard() {
           {filteredProjects.map((project) => (
             <div 
               key={project.id} 
-              className="card hover:shadow-md transition-shadow cursor-pointer"
+              className="card hover:shadow-md transition-shadow cursor-pointer hover:border-mecone-lawn"
               onClick={() => setViewingProject(project)}
             >
               <div className="flex flex-col lg:flex-row lg:items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                    <h3 className="text-lg font-semibold text-mecone-greenfield">{project.name}</h3>
                     <span className={getStatusBadge(project.status)}>
                       <span className="flex items-center gap-1">
                         {getStatusIcon(project.status)}
@@ -648,15 +676,15 @@ export default function Dashboard() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
+                      <Users className="w-4 h-4 text-mecone-forest" />
                       <span>{project.client}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
+                      <MapPin className="w-4 h-4 text-mecone-forest" />
                       <span>{project.address}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
+                      <FileText className="w-4 h-4 text-mecone-forest" />
                       <span>{project.council}</span>
                     </div>
                   </div>
@@ -664,13 +692,13 @@ export default function Dashboard() {
                 
                 <div className="mt-4 lg:mt-0 lg:ml-6 flex flex-col lg:items-end">
                   <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                    <Calendar className="w-4 h-4" />
+                    <Calendar className="w-4 h-4 text-mecone-forest" />
                     <span>Decision: {new Date(project.expectedDecision).toLocaleDateString()}</span>
                   </div>
                   <div className="text-right">
                     <div className={`text-sm font-medium ${
                       project.daysRemaining <= 7 ? 'text-red-600' : 
-                      project.daysRemaining <= 14 ? 'text-yellow-600' : 'text-green-600'
+                      project.daysRemaining <= 14 ? 'text-yellow-600' : 'text-mecone-lawn'
                     }`}>
                       {project.daysRemaining === 0 ? 'Decision due' : `${project.daysRemaining} days remaining`}
                     </div>
