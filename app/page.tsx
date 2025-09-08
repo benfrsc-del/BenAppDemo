@@ -14,8 +14,7 @@ import {
   Edit,
   Trash2,
   X,
-  Save,
-  ArrowLeft
+  Save
 } from 'lucide-react'
 
 interface Project {
@@ -89,7 +88,7 @@ export default function Dashboard() {
       }))
       setProjects(updatedProjects)
     } else {
-      // Initialize with sample data if no saved projects
+      // Initialize with one sample project if no saved projects
       const sampleProjects: Project[] = [
         {
           id: '1',
@@ -99,8 +98,8 @@ export default function Dashboard() {
           council: 'Parramatta City Council',
           status: 'review',
           submissionDate: '2024-08-15',
-          expectedDecision: '2024-09-30',
-          daysRemaining: calculateDaysRemaining('2024-09-30'),
+          expectedDecision: '2024-10-15',
+          daysRemaining: calculateDaysRemaining('2024-10-15'),
           value: 450000,
           description: 'Multi-story residential development with basement parking',
           daNumber: 'DA/2024/0123',
@@ -672,33 +671,6 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      <span>{project.client}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>{project.address}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      <span>{project.council}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-4 lg:mt-0 lg:ml-6 flex flex-col lg:items-end">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>Decision: {new Date(project.expectedDecision).toLocaleDateString()}</span>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-sm font-medium ${
-                      project.daysRemaining <= 7 ? 'text-red-600' : 
-                      project.daysRemaining <= 14 ? 'text-yellow-600' : 'text-green-600'
-                    }`}>
-                      {project.daysRemaining === 0 ? 'Decision due' : `${project.daysRemaining} days remaining`}
-                    </div>
                     <div className="text-sm text-gray-500">${project.value.toLocaleString()}</div>
                   </div>
                 </div>
@@ -742,4 +714,31 @@ export default function Dashboard() {
       )}
     </div>
   )
-}
+}flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      <span>{project.client}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      <span>{project.address}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      <span>{project.council}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 lg:mt-0 lg:ml-6 flex flex-col lg:items-end">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>Decision: {new Date(project.expectedDecision).toLocaleDateString()}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-sm font-medium ${
+                      project.daysRemaining <= 7 ? 'text-red-600' : 
+                      project.daysRemaining <= 14 ? 'text-yellow-600' : 'text-green-600'
+                    }`}>
+                      {project.daysRemaining === 0 ? 'Decision due' : `${project.daysRemaining} days remaining`}
+                    </div>
+                    <div className="
