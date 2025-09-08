@@ -914,7 +914,7 @@ export default function Dashboard() {
                     onClick={syncWithWorkflowMax}
                     className="btn-secondary flex items-center gap-2"
                   >
-                    <Sync className="w-4 h-4" />
+                    <RotateCcw className="w-4 h-4" />
                     Sync from WorkflowMax
                   </button>
                 )}
