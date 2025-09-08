@@ -15,7 +15,7 @@ import {
   Trash2,
   X,
   Save,
-  Sync,
+  RotateCcw,
   Cloud,
   AlertTriangle,
   RefreshCw
@@ -344,7 +344,210 @@ export default function Dashboard() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          <div className="card">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-sm font-medium text-gray-500">Total Projects</h3>
+                <p className="text-2xl font-bold text-gray-900">{totalProjects}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-sm font-medium text-gray-500">Approved</h3>
+                <p className="text-2xl font-bold text-gray-900">{approvedProjects}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <Clock className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-sm font-medium text-gray-500">Pending</h3>
+                <p className="text-2xl font-bold text-gray-900">{pendingProjects}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Users className="w-6 h-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-sm font-medium text-gray-500">Total Value</h3>
+                <p className="text-2xl font-bold text-gray-900">${(totalValue / 1000).toFixed(0)}k</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="flex items-center">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <Cloud className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-sm font-medium text-gray-500">WorkflowMax</h3>
+                <p className="text-2xl font-bold text-gray-900">{workflowMaxProjects}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              
+              <select
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="all">All Statuses</option>
+                <option value="submitted">Submitted</option>
+                <option value="review">Under Review</option>
+                <option value="approved">Approved</option>
+                <option value="conditional">Conditional</option>
+              </select>
+            </div>
+
+            {lastSyncTime && (
+              <p className="text-sm text-gray-500">
+                Last sync: {new Date(lastSyncTime).toLocaleString()}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {filteredProjects.map((project) => (
+            <div 
+              key={project.id} 
+              className="card hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => setViewingProject(project)}
+            >
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                    <span className={getStatusBadge(project.status)}>
+                      <span className="flex items-center gap-1">
+                        {getStatusIcon(project.status)}
+                        {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                      </span>
+                    </span>
+                    {project.workflowMaxJobId && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center gap-1">
+                        <Cloud className="w-3 h-3" />
+                        WFM
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      <span>{project.client}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      <span>{project.address}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      <span>{project.council}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 lg:mt-0 lg:ml-6 flex flex-col lg:items-end">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>Decision: {new Date(project.expectedDecision).toLocaleDateString()}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-sm font-medium ${
+                      project.daysRemaining <= 7 ? 'text-red-600' : 
+                      project.daysRemaining <= 14 ? 'text-yellow-600' : 'text-green-600'
+                    }`}>
+                      {project.daysRemaining === 0 ? 'Decision due' : `${project.daysRemaining} days remaining`}
+                    </div>
+                    <div className="text-sm text-gray-500">${project.value.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredProjects.length === 0 && (
+          <div className="card text-center py-12">
+            <div className="text-gray-500">
+              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg font-medium mb-2">No projects found</h3>
+              <p>Try adjusting your search or filter criteria, or add your first project.</p>
+              <div className="flex justify-center gap-3 mt-4">
+                <button 
+                  onClick={() => setIsAddingProject(true)}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Your First Project
+                </button>
+                {isWorkflowMaxConnected && (
+                  <button 
+                    onClick={syncWithWorkflowMax}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Sync from WorkflowMax
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {isAddingProject && (
+        <ProjectForm
+          onSubmit={addProject}
+          onCancel={() => setIsAddingProject(false)}
+        />
+      )}
+
+      {editingProject && (
+        <ProjectForm
+          project={editingProject}
+          onSubmit={(data) => updateProject({ ...editingProject, ...data })}
+          onCancel={() => setEditingProject(null)}
+        />
+      )}
+    </div>
+  )
+}md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Project Name *
@@ -693,7 +896,7 @@ export default function Dashboard() {
                   {isSyncing ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Sync className="w-4 h-4" />
+                    <RotateCcw className="w-4 h-4" />
                   )}
                   {isSyncing ? 'Syncing...' : 'Sync WorkflowMax'}
                 </button>
@@ -737,207 +940,4 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-          <div className="card">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500">Total Projects</h3>
-                <p className="text-2xl font-bold text-gray-900">{totalProjects}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500">Approved</h3>
-                <p className="text-2xl font-bold text-gray-900">{approvedProjects}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Clock className="w-6 h-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500">Pending</h3>
-                <p className="text-2xl font-bold text-gray-900">{pendingProjects}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500">Total Value</h3>
-                <p className="text-2xl font-bold text-gray-900">${(totalValue / 1000).toFixed(0)}k</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <Cloud className="w-6 h-6 text-indigo-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500">WorkflowMax</h3>
-                <p className="text-2xl font-bold text-gray-900">{workflowMaxProjects}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search projects..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              
-              <select
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-              >
-                <option value="all">All Statuses</option>
-                <option value="submitted">Submitted</option>
-                <option value="review">Under Review</option>
-                <option value="approved">Approved</option>
-                <option value="conditional">Conditional</option>
-              </select>
-            </div>
-
-            {lastSyncTime && (
-              <p className="text-sm text-gray-500">
-                Last sync: {new Date(lastSyncTime).toLocaleString()}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {filteredProjects.map((project) => (
-            <div 
-              key={project.id} 
-              className="card hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => setViewingProject(project)}
-            >
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
-                    <span className={getStatusBadge(project.status)}>
-                      <span className="flex items-center gap-1">
-                        {getStatusIcon(project.status)}
-                        {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
-                      </span>
-                    </span>
-                    {project.workflowMaxJobId && (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center gap-1">
-                        <Cloud className="w-3 h-3" />
-                        WFM
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      <span>{project.client}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>{project.address}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      <span>{project.council}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-4 lg:mt-0 lg:ml-6 flex flex-col lg:items-end">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>Decision: {new Date(project.expectedDecision).toLocaleDateString()}</span>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-sm font-medium ${
-                      project.daysRemaining <= 7 ? 'text-red-600' : 
-                      project.daysRemaining <= 14 ? 'text-yellow-600' : 'text-green-600'
-                    }`}>
-                      {project.daysRemaining === 0 ? 'Decision due' : `${project.daysRemaining} days remaining`}
-                    </div>
-                    <div className="text-sm text-gray-500">${project.value.toLocaleString()}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredProjects.length === 0 && (
-          <div className="card text-center py-12">
-            <div className="text-gray-500">
-              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-medium mb-2">No projects found</h3>
-              <p>Try adjusting your search or filter criteria, or add your first project.</p>
-              <div className="flex justify-center gap-3 mt-4">
-                <button 
-                  onClick={() => setIsAddingProject(true)}
-                  className="btn-primary flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Your First Project
-                </button>
-                {isWorkflowMaxConnected && (
-                  <button 
-                    onClick={syncWithWorkflowMax}
-                    className="btn-secondary flex items-center gap-2"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    Sync from WorkflowMax
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {isAddingProject && (
-        <ProjectForm
-          onSubmit={addProject}
-          onCancel={() => setIsAddingProject(false)}
-        />
-      )}
-
-      {editingProject && (
-        <ProjectForm
-          project={editingProject}
-          onSubmit={(data) => updateProject({ ...editingProject, ...data })}
-          onCancel={() => setEditingProject(null)}
-        />
-      )}
-    </div>
-  )
-}
+        <div className="grid grid-cols-1
