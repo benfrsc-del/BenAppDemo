@@ -200,7 +200,7 @@ export default function Dashboard() {
       client: project?.client || '',
       address: project?.address || '',
       council: project?.council || '',
-      status: project?.status || 'submitted',
+      status: project?.status || 'submitted' as 'submitted' | 'review' | 'approved' | 'conditional',
       submissionDate: project?.submissionDate || new Date().toISOString().split('T')[0],
       expectedDecision: project?.expectedDecision || '',
       value: project?.value || 0,
@@ -217,7 +217,7 @@ export default function Dashboard() {
         alert('Please fill in all required fields')
         return
       }
-      onSubmit(formData)
+      onSubmit(formData as Omit<Project, 'id' | 'daysRemaining'>)
     }
 
     return (
